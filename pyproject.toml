@@ -1,15 +1,23 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
 [project]
-name = "agencli-v2"
+name = "agencli"
 version = "0.1.0"
-description = "Add your description here"
-readme = "README.md"
+description = "AgenCLI"
 requires-python = ">=3.13"
 dependencies = [
     "python-frontmatter",
     "langchain",
     "langchain-openai",
     "python-dotenv",
-    "rich"
+    "rich",
+    "platformdirs"
 ]
 
+[tool.hatch.build.targets.wheel]
+packages = ["src/agencli"]
 
+[project.scripts]
+agencli = "agencli:cli"

@@ -1,7 +1,6 @@
 ---
 connection: 'openrouter'
 model: 'openai/gpt-5-codex'
-tools: 'shell'
 context_modules: 'system_info.py,tmux.py,zsh.py,format.py'
 temperature: 0.7
 ---
