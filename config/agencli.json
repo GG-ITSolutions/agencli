@@ -1,0 +1,10 @@
+{
+  "default_agent": "deutsch",
+  "connections": {
+    "openrouter": {
+      "provider": "openrouter",
+      "model": "anthropic/claude-3.7-sonnet:thinking",
+      "temperature": 0.7
+    }
+  }
+}
