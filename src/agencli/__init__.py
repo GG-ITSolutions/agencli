@@ -14,12 +14,10 @@ def cli():
     agencli = AgenCLI(model_name=args.model, provider_name=args.provider, agent_name=args.agent)
 
     if args.print_full_context:
-        print(agencli.system_overview)
-        print(agencli.agent_prompt)
-        print(agencli.build_context())
+        print("".join(message.content for message in agencli._build_request_body()))
         exit()
     elif args.print_context:
-        print(agencli.build_context())
+        print(agencli._build_context())
         exit()
 
     agencli.request_loop(args.message)

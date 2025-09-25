@@ -1,5 +1,5 @@
 {
-  "default_agent": "deutsch",
+  "default_agent": "default",
   "connections": {
     "openrouter": {
       "provider": "openrouter",

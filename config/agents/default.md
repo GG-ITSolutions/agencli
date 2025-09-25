@@ -1,6 +1,6 @@
 ---
 connection: "openrouter"
-context_modules: "format.py,system_info.py,tmux.py,zsh.py"
+context_modules: "system_info.py,tmux.py,zsh.py"
 temperature: 0.7
 ---
 

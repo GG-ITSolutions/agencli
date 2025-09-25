@@ -1,8 +1,7 @@
 ---
 connection: 'openrouter'
 model: 'openai/gpt-5-codex'
-context_modules: 'system_info.py,tmux.py,zsh.py,format.py'
-temperature: 0.7
+context_modules: 'system_info.py,tmux.py,zsh.py'
 ---
 
 # Deutscher KI-Assistent mit Shell-Zugriff

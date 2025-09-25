@@ -1,3 +1,4 @@
+import sys
 import re
 import os
 import json
@@ -54,9 +55,12 @@ class AgenCLI:
 
     def _get_agent_prompt(self) -> str:
         prompt_path = self.config_path / "agents" / f"{self.agent_name}.md"
+        begin = "\n\n===========  BEGIN AGENT PROMPT ===========\n\n"
+        end = "\n\n===========  END AGENT PROMPT ===========\n\n"
         
         with open(prompt_path, "r", encoding="utf-8") as file:
             post = frontmatter.load(file)
+            post.content = begin + post.content + end
             return post.content, post.metadata
 
     def _run_context_module(self, module: str) -> str:
@@ -67,26 +71,33 @@ class AgenCLI:
 
 
     def _build_context(self) -> str:
-        context = ""
+        context = "\n\n===========  BEGIN CONTEXT MODULES ===========\n\n"
 
         for module in self.agent_metadata["context_modules"].split(","):
             module = module.strip()
-            context += f"\n\n------- Context Module: {module} -------\n"
+            context += f"\n\n--------- Context Module: {module} ---------\n"
             context += self._run_context_module(module)
-            context += "\n\n-----------------------------------------\n"
+            context += "\n\n-------------------------------------------\n"
+
+        context += "\n\n===========  END CONTEXT MODULES ===========\n\n"
 
         return context
 
-    def _request(self, history: list):
+    def _build_request_body(self, history: list = []):
         system_messages = [
-            SystemMessage(content=self.system_overview),
-            SystemMessage(content=self.agent_prompt),
             SystemMessage(content=self._build_context()),
+            SystemMessage(content=self.agent_prompt),
+            SystemMessage(content=self.system_overview),
         ]
 
-        conversation = system_messages + history
-            
+        divider = [SystemMessage(content="\n\n=========== Here starts the conversation ===========\n\n")]
+
+        return system_messages + divider + history
+
+    def _request(self, history: list):
+        conversation = self._build_request_body(history)
         response = self.llm.invoke(conversation)
+
         return response.content
 
     def _execute_commands(self, response: str):
@@ -103,27 +114,26 @@ class AgenCLI:
             if user_consent == "y":
                 output = subprocess.run(command, shell=True, capture_output=True, text=True)
                 print(output.stdout)
+                print(output.stderr, file=sys.stderr)
                 return prompt + user_consent + "\n" + output.stdout
 
 
     def _print_response(self, response: str):
         response = re.sub(r"<execute>(.*?)</execute>", "", response)
-        response = re.sub(r"<think>(.*?)</think>", "", response)
-        response = re.sub(r"<user>", "", response)
+        response = re.sub(r"<think>(.*?)</think>", "[black on white] Thinking [/]\n", response)
+        response = re.sub(r"<done>", "", response)
         response = re.sub(r"<end>", "", response)
         self.console.print(response.strip())
 
     def request_loop(self, message: str):
-        history = []
-        history.append(HumanMessage(content=message))
+        history = [HumanMessage(content=message)]
+        response = ""
 
         while True:
-            response = self._request(history)
+            with self.console.status('Thinking'):
+                response = self._request(history)
             history.append(AIMessage(content=response))
 
-            if "<end>" in response:
-                break
-            
             try:
                 self._print_response(response)
                 command_output = self._execute_commands(response)
@@ -134,6 +144,6 @@ class AgenCLI:
                 history.append(SystemMessage(content=f"System Error: {e}"))
                 continue
 
-            if "<user>" in response:
+            if "<done>" in response:
                 message = Prompt.ask("[bold on blue] USER [/bold on blue][bold on green] MESSAGE [/bold on green]")
                 history.append(HumanMessage(content=message))

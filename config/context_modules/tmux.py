@@ -141,12 +141,10 @@ def _get_attached_clients():
         pass
     return "unknown"
 
-def _get_pane_content():
-    """Get content of current pane with up to 10,000 lines."""
+def _get_pane_content(capture_lines: int = 10000):
     try:
-        # Capture up to 10,000 lines from tmux buffer
         result = subprocess.run(
-            ['tmux', 'capture-pane', '-p', '-S', '-10000', '-E', '10000'],
+            ['tmux', 'capture-pane', '-p', '-S', f'-{capture_lines}', '-E', f'{capture_lines}'],
             capture_output=True,
             text=True,
             timeout=20
@@ -159,36 +157,10 @@ def _get_pane_content():
             if total_lines == 0:
                 return "Tmux buffer appears to be empty"
 
-            # If buffer is small, show everything
-            if total_lines <= 100:
-                return f"[Complete buffer: {total_lines} lines]\n\n" + '\n'.join(all_lines)
-
-            # For larger buffers, show last 2000 lines (most relevant)
-            if total_lines > 2000:
-                content_lines = all_lines[-2000:]
-                return f"[Showing last 2,000 lines of {total_lines:,} total lines in buffer]\n\n" + '\n'.join(content_lines)
-            else:
-                return f"[Buffer contains {total_lines} lines]\n\n" + '\n'.join(all_lines)
-
-        # Fallback: try basic capture without line limits
-        result = subprocess.run(
-            ['tmux', 'capture-pane', '-p'],
-            capture_output=True,
-            text=True,
-            timeout=10
-        )
-
-        if result.returncode == 0 and result.stdout.strip():
-            lines = result.stdout.strip().split('\n')
-            content = '\n'.join(lines[-500:])  # Last 500 lines as fallback
-
-            if len(lines) > 500:
-                return f"[Fallback: Showing last 500 lines of {len(lines)} total]\n\n{content}"
-            else:
-                return f"[Fallback: Buffer contains {len(lines)} lines]\n\n{content}"
+            return f"[Complete buffer: {total_lines} lines]\n\n" + '\n'.join(all_lines)
 
     except Exception as e:
-        return f"Error capturing tmux pane: {e}\n\nTroubleshooting:\n- Make sure you're in a tmux session\n- Check if pane has content\n- Try: tmux capture-pane -p (manually)"
+        return f"Error capturing tmux pane: {e}"
 
     return "No tmux pane content available"
 
