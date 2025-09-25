@@ -3,9 +3,9 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "agencli"
+name = "aish"
 version = "0.1.0"
-description = "AgenCLI"
+description = "AIsh"
 requires-python = ">=3.13"
 dependencies = [
     "python-frontmatter",
@@ -13,11 +13,12 @@ dependencies = [
     "langchain-openai",
     "python-dotenv",
     "rich",
-    "platformdirs"
+    "platformdirs",
+    "prompt_toolkit"
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/agencli"]
+packages = ["src/aish"]
 
 [project.scripts]
-agencli = "agencli:cli"
+aish = "aish:main"

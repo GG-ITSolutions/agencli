@@ -1,7 +1,6 @@
 ---
 connection: "openrouter"
 context_modules: "system_info.py,tmux.py,zsh.py"
-temperature: 0.7
 ---
 
 # Sample AI Assistant

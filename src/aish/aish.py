@@ -15,21 +15,22 @@ from .providers import PROVIDERS
 
 load_dotenv()
 
-class AgenCLI:
+class AIsh:
     def __init__(self, model_name: str = None, provider_name: str = None, agent_name: str = None):
         self.console = Console(force_terminal=True)
+        self.history = []
 
         self.config_path = self._get_config_path()
         self.config = self._load_config()
 
         self.system_overview = self._get_system_overview()
 
-        self.agent_name = agent_name or os.getenv("AGENCLI_AGENT") or self.config["default_agent"]
+        self.agent_name = agent_name or os.getenv("AISH_AGENT") or self.config["default_agent"]
         self.agent_prompt, self.agent_metadata = self._get_agent_prompt()
 
         self.default_connection = self.config["connections"][self.agent_metadata.get("connection")] or next(iter(self.config["connections"].values()))
-        self.model_name = model_name or self.agent_metadata.get("model") or os.getenv("AGENCLI_MODEL") or self.default_connection['model']
-        self.provider_name = provider_name or self.agent_metadata.get("provider") or os.getenv("AGENCLI_PROVIDER") or self.default_connection['provider']
+        self.model_name = model_name or self.agent_metadata.get("model") or os.getenv("AISH_MODEL") or self.default_connection['model']
+        self.provider_name = provider_name or self.agent_metadata.get("provider") or os.getenv("AISH_PROVIDER") or self.default_connection['provider']
 
         self.llm = PROVIDERS[self.provider_name](model=self.model_name)
 
@@ -40,16 +41,16 @@ class AgenCLI:
     def _get_config_path(self) -> Path:
         # Development: Check for local config directory
         local_config = Path.cwd() / "config"
-        if local_config.is_dir() and (local_config / "agencli.json").exists():
+        if local_config.is_dir() and (local_config / "aish.json").exists():
             return local_config
         
         # Production: XDG-compliant user config directory
-        user_config = Path(user_config_dir("agencli"))
+        user_config = Path(user_config_dir("aish"))
         user_config.mkdir(parents=True, exist_ok=True)
         return user_config
        
     def _load_config(self) -> dict:
-        with open(self.config_path / "agencli.json", "r", encoding="utf-8") as config_file:
+        with open(self.config_path / "aish.json", "r", encoding="utf-8") as config_file:
             return json.load(config_file)
 
 
@@ -125,25 +126,23 @@ class AgenCLI:
         response = re.sub(r"<end>", "", response)
         self.console.print(response.strip())
 
-    def request_loop(self, message: str):
-        history = [HumanMessage(content=message)]
-        response = ""
+    def user_message(self, message: str):
+        self.history.append(HumanMessage(content=message))
 
         while True:
             with self.console.status('Thinking'):
-                response = self._request(history)
-            history.append(AIMessage(content=response))
+                response = self._request(self.history)
+                self.history.append(AIMessage(content=response))
 
             try:
                 self._print_response(response)
                 command_output = self._execute_commands(response)
                 if command_output != None:
-                    history.append(SystemMessage(content=command_output))
+                    self.history.append(SystemMessage(content=command_output))
                     continue
             except Exception as e:
-                history.append(SystemMessage(content=f"System Error: {e}"))
+                self.history.append(SystemMessage(content=f"System Error: {e}"))
                 continue
-
+        
             if "<done>" in response:
-                message = Prompt.ask("[bold on blue] USER [/bold on blue][bold on green] MESSAGE [/bold on green]")
-                history.append(HumanMessage(content=message))
+                return
