@@ -123,7 +123,7 @@ class AIsh:
 
     def _print_response(self, response: str):
         response = re.sub(r"<execute>(.*?)</execute>", "", response)
-        response = re.sub(r"<think>(.*?)</think>", "[black on white] Thinking [/]\n", response)
+        response = re.sub(r"<think>(.*?)</think>", "", response)
         response = re.sub(r"<done>", "", response)
         response = re.sub(r"<end>", "", response)
         self.console.print(response.strip())
