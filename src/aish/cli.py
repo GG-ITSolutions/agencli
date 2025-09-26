@@ -1,5 +1,6 @@
 import os
 import time
+from .utils import script_capture
 from xonsh.main import setup
 from xonsh.built_ins import XSH
 from prompt_toolkit import prompt, PromptSession
@@ -44,14 +45,15 @@ class XonshInteractiveMode:
     
     def _run_command(self, command):
         self.aish.history.append(HumanMessage(content=command))
-        
         try:
-            XSH.execer.eval(f'$[{command}]')
-            # TODO: Capture output and add to history
+            with script_capture(command) as captured_output:
+                if captured_output.strip():
+                    self.aish.history.append(SystemMessage(content=captured_output.strip()))
         except Exception as e:
             error_msg = str(e).split('\n')[0]
             print(f"Error: {error_msg}")
             self.aish.history.append(SystemMessage(content=error_msg))
+    
     
     def _handle_input(self, user_input):
         if self.mode == "prompt":
@@ -66,13 +68,11 @@ class XonshInteractiveMode:
             self._handle_input(message)
             return
         
-        # Start with custom prompt that can handle mode switching
         self._run_interactive_session()
     
     def _run_interactive_session(self):
         while True:
             try:
-                # Übergebe Prompt als callable für Live-Updates
                 user_input = self.session.prompt(self._get_prompt_text, key_bindings=self._setup_bindings())
                 
                 if user_input.lower() in ["exit", "quit"]:

@@ -1,4 +1,3 @@
-import sys
 import re
 import os
 import json
@@ -11,6 +10,7 @@ from rich.console import Console
 from rich.prompt import Prompt
 from platformdirs import user_config_dir
 
+from .utils import script_capture
 from .providers import PROVIDERS
 
 load_dotenv()
@@ -113,12 +113,10 @@ class AIsh:
             if user_consent == "n":
                 continue
             if user_consent == "y":
-                output = subprocess.run(command, shell=True, capture_output=True, text=True)
-                if output.stdout:
-                    print(output.stdout)
-                if output.stderr:
-                    print(output.stderr, file=sys.stderr)
-                return prompt + user_consent + "\n" + output.stdout
+                with script_capture(command) as output:
+                    if output.strip():
+                        self.history.append(SystemMessage(content=output.strip()))
+                return prompt + user_consent + "\n" + output.strip()
 
 
     def _print_response(self, response: str):
