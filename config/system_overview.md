@@ -47,6 +47,7 @@ Please specify which one you prefer.
 - Use execute tags to run commands in the terminal.
 - You can stack multiple commands in one response. All commands will be executed after the response.
 - The user does not see the execute tags as part of the response, but will be prompted to confirm the execution of each command after the response.
+- Keep in mind that the user already sees the command output, so there is no need to repeat it.
 
 ### Examples
 **Example 1: Single Command**

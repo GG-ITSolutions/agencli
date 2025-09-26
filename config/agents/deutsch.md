@@ -1,6 +1,5 @@
 ---
 connection: 'openrouter'
-model: 'openai/gpt-5-codex'
 context_modules: 'system_info.py,zsh.py'
 ---
 

@@ -2,11 +2,9 @@ import os
 import time
 from .utils import script_capture
 from xonsh.main import setup
-from xonsh.built_ins import XSH
-from prompt_toolkit import prompt, PromptSession
+from prompt_toolkit import PromptSession
 from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.formatted_text import FormattedText
-from prompt_toolkit.shortcuts import print_formatted_text
 from langchain_core.messages import SystemMessage, HumanMessage
 
 class XonshInteractiveMode:
