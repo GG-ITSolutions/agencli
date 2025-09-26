@@ -114,8 +114,10 @@ class AIsh:
                 continue
             if user_consent == "y":
                 output = subprocess.run(command, shell=True, capture_output=True, text=True)
-                print(output.stdout)
-                print(output.stderr, file=sys.stderr)
+                if output.stdout:
+                    print(output.stdout)
+                if output.stderr:
+                    print(output.stderr, file=sys.stderr)
                 return prompt + user_consent + "\n" + output.stdout
 
 
@@ -126,7 +128,7 @@ class AIsh:
         response = re.sub(r"<end>", "", response)
         self.console.print(response.strip())
 
-    def user_message(self, message: str):
+    def process_user_message(self, message: str):
         self.history.append(HumanMessage(content=message))
 
         while True:

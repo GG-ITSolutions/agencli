@@ -22,4 +22,4 @@ def main():
         exit()
 
     interactive_mode = InteractiveMode(aish)
-    interactive_mode.run()
+    interactive_mode.run(args.message)
