@@ -1,4 +1,5 @@
 import os
+import socket
 import time
 from .utils import script_capture
 from xonsh.main import setup
@@ -19,9 +20,16 @@ class XonshInteractiveMode:
         blocks = [('ansired', time.strftime("%H:%M:%S") + ' ')]
         blocks += [('ansiblue', os.getenv("USER", "user"))]
         blocks += [('ansipurple', '@')]
-        blocks += [('ansiyellow', self.mode)]
-        blocks += [('ansiwhite', ' ' + os.getcwd())]
-        blocks += [('ansipurple', ' ? ')]
+        
+        if self.mode == "terminal":
+            blocks += [('ansiyellow', socket.gethostname())]
+            blocks += [('ansiwhite', ' ' + os.getcwd())]
+            blocks += [('ansipurple', ' # ')]
+        else:
+            blocks += [('ansiyellow', self.aish.agent_name)]
+            blocks += [('ansiwhite', ' ' + self.aish.model_name)]
+            blocks += [('ansipurple', ' ? ')]
+            
 
         return FormattedText(blocks)
 
